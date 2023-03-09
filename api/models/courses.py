@@ -1,19 +1,18 @@
 from ..utils import db
 
-class User(db.Model):
-    __tablename__ = 'users'
+class Course(db.Model):
+    __tablename__ = 'courses'
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
-    email = db.Column(db.String(50), nullable=False, unique=True)
-    password_hash = db.Column(db.Text(), nullable=False)
-    course_id = db.Column(db.Integer(), db.ForeignKey('courses.id'))
+    teacher = db.Column(db.String(50), nullable=False, unique=True)
+    students = db.relationship('User', backref='courses', lazy=True)
 
     def __repr__(self):
-        return f"<User {self.name}>"
-
+        return f"<Course {self.id}>"
+        
     def save(self):
         db.session.add(self)
-        db.session.commit()        
+        db.session.commit()
     
     def update(self):
         db.session.commit()
