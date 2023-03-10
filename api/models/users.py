@@ -6,10 +6,10 @@ class User(db.Model):
     name = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
     password_hash = db.Column(db.Text(), nullable=False)
-    course_id = db.Column(db.Integer(), db.ForeignKey('courses.id'))
+    courses = db.relationship('Course', secondary='students')
 
     def __repr__(self):
-        return f"<User {self.name}>"
+        return f"<{self.name}>"
 
     def save(self):
         db.session.add(self)

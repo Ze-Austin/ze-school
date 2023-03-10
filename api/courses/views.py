@@ -1,6 +1,7 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.courses import Course
+from ..models.students import Student
 from http import HTTPStatus
 from flask_jwt_extended import jwt_required, get_jwt, verify_jwt_in_request
 from functools import wraps
@@ -12,6 +13,13 @@ course_model = course_namespace.model(
         'id': fields.Integer(description="Course's ID"),
         'name': fields.String(description="Course's Name", required=True),
         'teacher': fields.String(description="Teacher taking the Course", required=True)
+    }
+)
+
+student_model = course_namespace.model(
+    'Student', {
+        'course_id': fields.Integer(description="Course's ID"),
+        'student_id': fields.Integer(description="Student's User ID")
     }
 )
 
@@ -83,7 +91,7 @@ class GetUpdateDelete(Resource):
         """
             Retrieve a Course's Details by ID
         """
-        course = course.get_by_id(course_id)
+        course = Course.get_by_id(course_id)
         
         return course, HTTPStatus.OK
     
@@ -100,7 +108,7 @@ class GetUpdateDelete(Resource):
         """
             Update a Course's Details by ID
         """
-        course = course.get_by_id(course_id)
+        course = Course.get_by_id(course_id)
 
         data = course_namespace.payload
 
@@ -122,8 +130,56 @@ class GetUpdateDelete(Resource):
         """
             Delete a course by ID
         """
-        course = course.get_by_id(course_id)
+        course = Course.get_by_id(course_id)
 
         course.delete()
 
         return {"message": "Course Successfully Deleted"}, HTTPStatus.OK
+
+
+@course_namespace.route('/course/<int:course_id>/students')
+class StudentEnrollment(Resource):
+
+    @course_namespace.marshal_with(student_model)
+    @course_namespace.doc(
+        description="Get all students enrolled for a course",
+        params = {
+            'course_id': "The Course's ID"
+        }
+    )
+    @admin_required()
+    def get(self, course_id):
+        """
+            Get all Students enrolled for a Course
+        """
+        course = Course.get_by_id(course_id)
+
+        students = course.students
+
+        return students, HTTPStatus.OK
+    
+    @course_namespace.expect(student_model)
+    @course_namespace.marshal_with(student_model)
+    @course_namespace.doc(
+        description="Enroll students for a course",
+        params = {
+            'course_id': "The Course's ID"
+        }
+    )
+    @admin_required()
+    def post(self, course_id):
+        """
+            Enroll Students for a Course
+        """
+        course = Course.get_by_id(course_id)
+
+        data = course_namespace.payload
+
+        enrolled_student =  Student(
+            course_id = course_id,
+            student_id = data['student_id']
+        )
+
+        enrolled_student.save()
+
+        return enrolled_student, HTTPStatus.CREATED

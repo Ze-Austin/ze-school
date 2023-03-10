@@ -8,6 +8,7 @@ from .utils import db
 from .utils.blacklist import BLACKLIST
 from .models.users import User
 from .models.courses import Course
+from .models.students import Student
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from werkzeug.exceptions import NotFound, MethodNotAllowed
@@ -111,7 +112,8 @@ def create_app(config=config_dict['dev']):
         return {
             'db': db,
             'User': User,
-            'Course': Course
+            'Course': Course,
+            'Student': Student
         }
 
     return app

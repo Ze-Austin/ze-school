@@ -1,14 +1,15 @@
 from ..utils import db
 
-class Course(db.Model):
-    __tablename__ = 'courses'
+class Student(db.Model):
+    __tablename__ = 'students'
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
-    teacher = db.Column(db.String(50), nullable=False, unique=True)
-    enrolled_students = db.relationship('User', secondary='students')
+    course_id = db.Column(db.Integer(), db.ForeignKey('courses.id'))
+    student_id = db.Column(db.Integer(), db.ForeignKey('users.id'))
+    course = db.relationship('Course', backref='students', lazy=True)
+    student = db.relationship('User', backref='students', lazy=True)
 
     def __repr__(self):
-        return f"<Course {self.id}>"
+        return f"<Student {self.student_id}>"
         
     def save(self):
         db.session.add(self)
