@@ -85,8 +85,8 @@ class Login(Resource):
         user = User.query.filter_by(email=email).first()
 
         if (user is not None) and check_password_hash(user.password_hash, password):
-            access_token = create_access_token(identity=user.name)
-            refresh_token = create_refresh_token(identity=user.name)
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(identity=user.id)
 
             response = {
                 'access_token': access_token,
