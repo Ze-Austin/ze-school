@@ -38,7 +38,7 @@ def admin_required():
     return wrapper
 
 
-@course_namespace.route('/courses')
+@course_namespace.route('')
 class GetCreate(Resource):
 
     @course_namespace.marshal_with(course_model)
@@ -76,7 +76,7 @@ class GetCreate(Resource):
         return new_course, HTTPStatus.CREATED
     
 
-@course_namespace.route('/course/<int:course_id>')
+@course_namespace.route('/<int:course_id>')
 class GetUpdateDelete(Resource):
     
     @course_namespace.marshal_with(course_model)
@@ -137,7 +137,7 @@ class GetUpdateDelete(Resource):
         return {"message": "Course Successfully Deleted"}, HTTPStatus.OK
 
 
-@course_namespace.route('/course/<int:course_id>/students')
+@course_namespace.route('/<int:course_id>/students')
 class StudentEnrollment(Resource):
 
     @course_namespace.marshal_with(student_model)

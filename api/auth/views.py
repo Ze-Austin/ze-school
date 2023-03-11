@@ -141,7 +141,7 @@ class GetAll(Resource):
         return users, HTTPStatus.OK
 
 
-@auth_namespace.route('/user/<int:user_id>')
+@auth_namespace.route('/users/<int:user_id>')
 class GetUpdateDelete(Resource):
     
     @auth_namespace.marshal_with(user_model)

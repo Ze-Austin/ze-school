@@ -97,7 +97,7 @@ def create_app(config=config_dict['dev']):
         )
 
     api.add_namespace(auth_namespace, path='/auth')
-    api.add_namespace(course_namespace)
+    api.add_namespace(course_namespace, path='/courses')
 
     @api.errorhandler(NotFound)
     def not_found(error):
