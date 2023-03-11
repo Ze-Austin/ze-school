@@ -2,6 +2,7 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.courses import Course
 from ..models.students import Student
+from ..utils.decorators import admin_required
 from http import HTTPStatus
 from flask_jwt_extended import jwt_required, get_jwt, verify_jwt_in_request
 from functools import wraps
@@ -22,20 +23,6 @@ student_model = course_namespace.model(
         'student_id': fields.Integer(description="Student's User ID")
     }
 )
-
-# Custom decorator to verify admin access
-def admin_required():
-    def wrapper(fn):
-        @wraps(fn)
-        def decorator(*args, **kwargs):
-            verify_jwt_in_request()
-            claims = get_jwt()
-            if claims["is_admin"]:
-                return fn(*args, **kwargs)
-            else:
-                return {"message": "Administrator access required"}, HTTPStatus.FORBIDDEN
-        return decorator
-    return wrapper
 
 
 @course_namespace.route('')

@@ -2,10 +2,10 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.users import User
 from ..utils.blacklist import BLACKLIST
+from ..utils.decorators import admin_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from http import HTTPStatus
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt, verify_jwt_in_request
-from functools import wraps
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 
 auth_namespace = Namespace('auth', description='Namespace for Authentication')
 
@@ -32,20 +32,6 @@ user_model = auth_namespace.model(
         'password_hash': fields.String(required=True, description="Password")    
     }
 )
-
-# Custom decorator to verify admin access
-def admin_required():
-    def wrapper(fn):
-        @wraps(fn)
-        def decorator(*args, **kwargs):
-            verify_jwt_in_request()
-            claims = get_jwt()
-            if claims["is_admin"]:
-                return fn(*args, **kwargs)
-            else:
-                return {"message": "Administrator access required"}, HTTPStatus.FORBIDDEN
-        return decorator
-    return wrapper
 
 
 @auth_namespace.route('/signup')
