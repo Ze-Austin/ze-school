@@ -39,7 +39,7 @@ class CourseTestCase(unittest.TestCase):
             "Authorization": f"Bearer {token}"
         }
 
-        response = self.client.get('/courses/courses', headers=headers)
+        response = self.client.get('/courses', headers=headers)
 
         assert response.status_code == 200
 
@@ -59,7 +59,7 @@ class CourseTestCase(unittest.TestCase):
             "Authorization": f"Bearer {token}"
         }
 
-        response = self.client.post('/courses/courses', json=data, headers=headers)
+        response = self.client.post('/courses', json=data, headers=headers)
 
         assert response.status_code == 201
 
