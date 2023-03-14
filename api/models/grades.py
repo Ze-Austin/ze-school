@@ -1,13 +1,15 @@
 from ..utils import db
 
-class Course(db.Model):
-    __tablename__ = 'courses'
+class Grade(db.Model):
+    __tablename__ = 'grades'
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    teacher = db.Column(db.String(100), nullable=False, unique=True)
+    student_id = db.Column(db.Integer(), db.ForeignKey('students.id'), nullable=False)
+    course_id = db.Column(db.Integer(), db.ForeignKey('courses.id'), nullable=False)
+    percent_grade = db.Column(db.Float(), nullable=False)
+    letter_grade = db.Column(db.String(5), nullable=True)
 
     def __repr__(self):
-        return f"<Course {self.name}>"
+        return f"<{self.percent_grade}%>"
         
     def save(self):
         db.session.add(self)

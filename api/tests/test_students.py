@@ -2,7 +2,7 @@ import unittest
 from .. import create_app
 from ..config.config import config_dict
 from ..utils import db
-from ..models.users import User
+from ..models.students import Student
 from flask_jwt_extended import create_access_token
 
 class UserTestCase(unittest.TestCase):
@@ -31,27 +31,31 @@ class UserTestCase(unittest.TestCase):
         self.client = None
 
 
-    def test_user_registration(self):
+    def test_student_registration(self):
 
         data = {
-            "name": "Test User",
-            "email": "testuser@gmail.com",
-            "password": "password"
+            "first_name": "Test",
+            "last_name": "Student",
+            "email": "teststudent@gmail.com",
+            "password": "password",
+            "matric_no": "ZSCH/23/03/0001"
         }
 
-        response = self.client.post('/auth/signup', json=data)
+        response = self.client.post('/students/register', json=data, headers=headers)
 
-        user = User.query.filter_by(email='testuser@gmail.com').first()
+        student = Student.query.filter_by(email='teststudent@gmail.com').first()
 
-        assert user.name == "Test User"
+        assert student.first_name == "Test"
+
+        assert student.matric_no == "ZSCH/23/03/0001"
 
         assert response.status_code == 201
 
 
-    def test_user_login(self):
+    def test_student_login(self):
 
         data = {
-            "email":"testuser@gmail.com",
+            "email":"teststudent@gmail.com",
             "password": "password"
         }
         response = self.client.post('/auth/login', json=data)
@@ -59,7 +63,7 @@ class UserTestCase(unittest.TestCase):
         assert response.status_code == 200
 
     
-    def test_user_retrieval(self):
+    def test_student_retrieval(self):
 
         token = create_access_token(identity=1)
 
@@ -67,7 +71,7 @@ class UserTestCase(unittest.TestCase):
             "Authorization": f"Bearer {token}"
         }
 
-        response = self.client.get('/auth/users', headers=headers)
+        response = self.client.get('/students', headers=headers)
 
         assert response.status_code == 200
 

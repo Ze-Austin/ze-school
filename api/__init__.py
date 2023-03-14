@@ -2,13 +2,18 @@ from flask import Flask
 from flask_restx import Api
 from dotenv import load_dotenv
 from .auth.views import auth_namespace
+from .admin.views import admin_namespace
 from .courses.views import course_namespace
+from .students.views import student_namespace
 from .config.config import config_dict
 from .utils import db
 from .utils.blacklist import BLACKLIST
 from .models.users import User
+from .models.admin import Admin
+from .models.grades import Grade
 from .models.courses import Course
 from .models.students import Student
+from .models.student_course import StudentCourse
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from werkzeug.exceptions import NotFound, MethodNotAllowed
@@ -26,19 +31,6 @@ def create_app(config=config_dict['dev']):
     migrate = Migrate(app, db)
 
     jwt = JWTManager(app)
-
-    # Make the first registered user an admin
-    @jwt.additional_claims_loader
-    def add_claims_to_jwt(identity):
-        if identity == 1:
-            return {
-                'is_admin': True
-            }
-        else:
-            return {
-                'is_admin': False
-            }
-    
 
     @jwt.token_in_blocklist_loader
     def check_if_token_in_blacklist(jwt_header, jwt_payload):
@@ -97,7 +89,9 @@ def create_app(config=config_dict['dev']):
         )
 
     api.add_namespace(auth_namespace, path='/auth')
+    api.add_namespace(admin_namespace, path='/admin')
     api.add_namespace(course_namespace, path='/courses')
+    api.add_namespace(student_namespace, path='/students')
 
     @api.errorhandler(NotFound)
     def not_found(error):
@@ -112,8 +106,11 @@ def create_app(config=config_dict['dev']):
         return {
             'db': db,
             'User': User,
+            'Admin': Admin,
+            'Grade': Grade,
             'Course': Course,
-            'Student': Student
+            'Student': Student,
+            'StudentCourse': StudentCourse
         }
 
     return app
