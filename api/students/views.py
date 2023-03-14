@@ -1,4 +1,3 @@
-from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.students import Student
 from ..utils.decorators import admin_required
@@ -57,14 +56,14 @@ class StudentRegistration(Resource):
         """
             Register a Student - Admins Only
         """        
-        data = request.get_json()
+        data = student_namespace.payload
 
         new_student = Student(
-            first_name = data.get('first_name'),
-            last_name = data.get('last_name'),
-            email = data.get('email'),
-            password_hash = generate_password_hash(data.get('password')),
-            matric_no = data.get('matric_no'),
+            first_name = data['first_name'],
+            last_name = data['last_name'],
+            email = data['email'],
+            password_hash = generate_password_hash(data['password']),
+            matric_no = data['matric_no'],
             user_type = 'student'
         )
 

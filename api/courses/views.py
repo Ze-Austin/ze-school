@@ -1,11 +1,10 @@
-from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.courses import Course
 from ..models.students import Student
+from ..models.student_course import StudentCourse
 from ..utils.decorators import admin_required
 from http import HTTPStatus
-from flask_jwt_extended import jwt_required, get_jwt, verify_jwt_in_request
-from functools import wraps
+from flask_jwt_extended import jwt_required
 
 course_namespace = Namespace('courses', description='Namespace for Courses')
 
@@ -17,16 +16,16 @@ course_model = course_namespace.model(
     }
 )
 
-student_model = course_namespace.model(
-    'Student', {
-        'course_id': fields.Integer(description="Course's ID"),
-        'student_id': fields.Integer(description="Student's User ID")
+student_course_model = course_namespace.model(
+    'StudentCourse', {
+        'student_id': fields.Integer(description="Student's User ID"),
+        'course_id': fields.Integer(description="Course's ID")
     }
 )
 
 
 @course_namespace.route('')
-class GetCreate(Resource):
+class GetCreateCourses(Resource):
 
     @course_namespace.marshal_with(course_model)
     @course_namespace.doc(
@@ -49,7 +48,7 @@ class GetCreate(Resource):
     @admin_required()
     def post(self):
         """
-            Register a Course
+            Register a Course - Admins Only
         """
         data = course_namespace.payload
 
@@ -64,7 +63,7 @@ class GetCreate(Resource):
     
 
 @course_namespace.route('/<int:course_id>')
-class GetUpdateDelete(Resource):
+class GetUpdateDeleteCourse(Resource):
     
     @course_namespace.marshal_with(course_model)
     @course_namespace.doc(
@@ -76,7 +75,7 @@ class GetUpdateDelete(Resource):
     @admin_required()
     def get(self, course_id):
         """
-            Retrieve a Course's Details by ID
+            Retrieve a Course's Details by ID - Admins Only
         """
         course = Course.get_by_id(course_id)
         
@@ -93,7 +92,7 @@ class GetUpdateDelete(Resource):
     @admin_required()
     def put(self, course_id):
         """
-            Update a Course's Details by ID
+            Update a Course's Details by ID - Admins Only
         """
         course = Course.get_by_id(course_id)
 
@@ -115,7 +114,7 @@ class GetUpdateDelete(Resource):
     @admin_required()
     def delete(self, course_id):
         """
-            Delete a course by ID
+            Delete a course by ID - Admins Only
         """
         course = Course.get_by_id(course_id)
 
@@ -125,9 +124,9 @@ class GetUpdateDelete(Resource):
 
 
 @course_namespace.route('/<int:course_id>/students')
-class StudentEnrollment(Resource):
+class StudentCourseEnrollment(Resource):
 
-    @course_namespace.marshal_with(student_model)
+    @course_namespace.marshal_with(student_course_model)
     @course_namespace.doc(
         description="Get all students enrolled for a course",
         params = {
@@ -137,18 +136,15 @@ class StudentEnrollment(Resource):
     @admin_required()
     def get(self, course_id):
         """
-            Get all Students enrolled for a Course
+            Get all Students enrolled for a Course - Admins Only
         """
-        course = Course.get_by_id(course_id)
-
-        students = course.students
-
-        return students, HTTPStatus.OK
+        enrolled_students = StudentCourse.get_students_in_course(course_id)
+        return enrolled_students, HTTPStatus.OK
     
-    @course_namespace.expect(student_model)
-    @course_namespace.marshal_with(student_model)
+    @course_namespace.expect(student_course_model)
+    @course_namespace.marshal_with(student_course_model)
     @course_namespace.doc(
-        description="Enroll students for a course",
+        description="Remove a student from a course",
         params = {
             'course_id': "The Course's ID"
         }
@@ -156,11 +152,11 @@ class StudentEnrollment(Resource):
     @admin_required()
     def post(self, course_id):
         """
-            Enroll Students for a Course
+            Enroll Students for a Course - Admins Only
         """
         data = course_namespace.payload
 
-        enrolled_student =  Student(
+        enrolled_student =  StudentCourse(
             course_id = course_id,
             student_id = data['student_id']
         )
@@ -168,3 +164,30 @@ class StudentEnrollment(Resource):
         enrolled_student.save()
 
         return enrolled_student, HTTPStatus.CREATED
+
+
+@course_namespace.route('/<int:course_id>/students/<int:student_id>')
+class StudentCourseRemoval(Resource):
+
+    @course_namespace.doc(
+        description='Remove a student from a course',
+        params = {
+            'course_id': "The Course's ID",
+            'student_id': "The Student's ID"
+        }
+    )
+    @admin_required()
+    def delete(self, course_id, student_id):
+        """
+            Remove a Student from a Course - Admins Only
+        """
+        course = Course.get_by_id(course_id)
+        student = Student.get_by_id(student_id)
+
+        student_in_course = StudentCourse.query.filter_by(
+                student_id=student.id, course_id=course.id
+            ).first()
+
+        student_in_course.delete()
+
+        return {"message": "Course Successfully Deleted"}, HTTPStatus.OK
