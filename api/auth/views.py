@@ -2,11 +2,23 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.users import User
 from ..utils.blacklist import BLACKLIST
+from ..utils.decorators import admin_required
 from werkzeug.security import check_password_hash
 from http import HTTPStatus
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 
 auth_namespace = Namespace('auth', description='Namespace for Authentication')
+
+user_model = auth_namespace.model(
+    'User', {
+        'id': fields.Integer(description="User ID"),
+        'first_name': fields.String(required=True, description="First Name"),
+        'last_name': fields.String(required=True, description="Last Name"),
+        'email': fields.String(required=True, description="User's Email"),
+        'password_hash': fields.String(required=True, description="User's Password"),
+        'user_type': fields.String(required=True, description="Type of User")  
+    }
+)
 
 login_model = auth_namespace.model(
     'Login', {
@@ -15,6 +27,20 @@ login_model = auth_namespace.model(
     }
 )
 
+@auth_namespace.route('/users')
+class GetAllUsers(Resource):
+    @auth_namespace.marshal_with(user_model)
+    @auth_namespace.doc(
+        description="Retrieve all users"
+    )
+    @admin_required()
+    def get(self):
+        """
+            Retrieve all Users - Admins Only
+        """
+        users = User.query.all()
+
+        return users, HTTPStatus.OK
 
 @auth_namespace.route('/login')
 class Login(Resource):
@@ -23,10 +49,10 @@ class Login(Resource):
         """
             Generate JWT Token
         """
-        data = request.get_json()
+        data = auth_namespace.payload
 
-        email = data.get('email')
-        password = data.get('password')
+        email = data['email']
+        password = data['password']
 
         user = User.query.filter_by(email=email).first()
 

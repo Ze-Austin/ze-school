@@ -12,14 +12,14 @@ course_model = course_namespace.model(
     'Course', {
         'id': fields.Integer(description="Course's ID"),
         'name': fields.String(description="Course's Name", required=True),
-        'teacher': fields.String(description="Teacher taking the Course", required=True)
+        'teacher': fields.String(description="Course's Teacher", required=True)
     }
 )
 
-student_course_model = course_namespace.model(
-    'StudentCourse', {
-        'student_id': fields.Integer(description="Student's User ID"),
-        'course_id': fields.Integer(description="Course's ID")
+course_student_model = course_namespace.model(
+    'CourseStudent', {
+        'course_id': fields.Integer(description="Course's ID"),
+        'student_id': fields.Integer(description="Student's User ID")
     }
 )
 
@@ -29,7 +29,7 @@ class GetCreateCourses(Resource):
 
     @course_namespace.marshal_with(course_model)
     @course_namespace.doc(
-        description='Get all courses'
+        description = "Get All Courses"
     )
     @jwt_required()
     def get(self):
@@ -41,9 +41,8 @@ class GetCreateCourses(Resource):
         return courses, HTTPStatus.OK
     
     @course_namespace.expect(course_model)
-    @course_namespace.marshal_with(course_model)
     @course_namespace.doc(
-        description='Register a course'
+        description='Register a Course - Admins Only'
     )
     @admin_required()
     def post(self):
@@ -52,6 +51,12 @@ class GetCreateCourses(Resource):
         """
         data = course_namespace.payload
 
+        # Check if course already exists
+        course = Course.query.filter_by(name=data['name']).first()
+        if course:
+            return {"message": "Course Already Exists"}, HTTPStatus.CONFLICT
+
+        # Register new course
         new_course = Course(
             name = data['name'],
             teacher = data['teacher']
@@ -59,7 +64,12 @@ class GetCreateCourses(Resource):
 
         new_course.save()
 
-        return new_course, HTTPStatus.CREATED
+        course_resp = {}
+        course_resp['id'] = new_course.id
+        course_resp['name'] = new_course.name
+        course_resp['teacher'] = new_course.teacher
+
+        return course_resp, HTTPStatus.CREATED
     
 
 @course_namespace.route('/<int:course_id>')
@@ -67,7 +77,7 @@ class GetUpdateDeleteCourse(Resource):
     
     @course_namespace.marshal_with(course_model)
     @course_namespace.doc(
-        description="Retrieve a course's details by ID",
+        description = "Retrieve a Course's Details by ID - Admins Only",
         params = {
             'course_id': "The Course's ID"
         }
@@ -84,7 +94,7 @@ class GetUpdateDeleteCourse(Resource):
     @course_namespace.expect(course_model)
     @course_namespace.marshal_with(course_model)
     @course_namespace.doc(
-        description="Update a course's details by ID",
+        description = "Update a Course's Details by ID - Admins Only",
         params = {
             'course_id': "The Course's ID"
         }
@@ -99,14 +109,14 @@ class GetUpdateDeleteCourse(Resource):
         data = course_namespace.payload
 
         course.name = data['name']
-        course.email = data['email']
+        course.teacher = data['teacher']
 
         course.update()
 
         return course, HTTPStatus.OK
     
     @course_namespace.doc(
-        description='Delete a course by ID',
+        description = "Delete a Course by ID - Admins Only",
         params = {
             'course_id': "The Course's ID"
         }
@@ -114,7 +124,7 @@ class GetUpdateDeleteCourse(Resource):
     @admin_required()
     def delete(self, course_id):
         """
-            Delete a course by ID - Admins Only
+            Delete a Course by ID - Admins Only
         """
         course = Course.get_by_id(course_id)
 
@@ -124,11 +134,10 @@ class GetUpdateDeleteCourse(Resource):
 
 
 @course_namespace.route('/<int:course_id>/students')
-class StudentCourseEnrollment(Resource):
+class GetAllCourseStudents(Resource):
 
-    @course_namespace.marshal_with(student_course_model)
     @course_namespace.doc(
-        description="Get all students enrolled for a course",
+        description = "Get all Students Enrolled for a Course - Admins Only",
         params = {
             'course_id': "The Course's ID"
         }
@@ -136,41 +145,68 @@ class StudentCourseEnrollment(Resource):
     @admin_required()
     def get(self, course_id):
         """
-            Get all Students enrolled for a Course - Admins Only
+            Get all Students Enrolled for a Course - Admins Only
         """
-        enrolled_students = StudentCourse.get_students_in_course(course_id)
-        return enrolled_students, HTTPStatus.OK
+        students = StudentCourse.get_students_in_course(course_id)
+        resp = []
+
+        for student in students:
+            student_resp = {}
+            student_resp['id'] = student.id
+            student_resp['first_name'] = student.first_name
+            student_resp['last_name'] = student.last_name
+            student_resp['matric_no'] = student.matric_no
+
+            resp.append(student_resp)
+
+        return resp, HTTPStatus.OK
+
+
+@course_namespace.route('/<int:course_id>/students/<int:student_id>')
+class AddDropCourseStudent(Resource):
     
-    @course_namespace.expect(student_course_model)
-    @course_namespace.marshal_with(student_course_model)
     @course_namespace.doc(
-        description="Remove a student from a course",
+        description = "Enroll a Student for a Course - Admins Only",
         params = {
             'course_id': "The Course's ID"
         }
     )
     @admin_required()
-    def post(self, course_id):
+    def post(self, course_id, student_id):
         """
-            Enroll Students for a Course - Admins Only
+            Enroll a Student for a Course - Admins Only
         """
-        data = course_namespace.payload
-
-        enrolled_student =  StudentCourse(
+        course = Course.get_by_id(course_id)
+        student = Student.get_by_id(student_id)
+        
+        student_in_course = StudentCourse.query.filter_by(
+                student_id=student.id, course_id=course.id
+            ).first()
+        if student_in_course:
+            return {
+                "message": f"{student.first_name} {student.last_name} is already registered for {course.name}"
+            }, HTTPStatus.OK
+        
+        course_student =  StudentCourse(
             course_id = course_id,
-            student_id = data['student_id']
+            student_id = student_id
         )
 
-        enrolled_student.save()
+        course_student.save()
 
-        return enrolled_student, HTTPStatus.CREATED
+        course_student_resp = {}
+        course_student_resp['course_id'] = course_student.course_id
+        course_student_resp['course_name'] = course.name
+        course_student_resp['course_teacher'] = course.teacher
+        course_student_resp['student_id'] = course_student.student_id
+        course_student_resp['student_first_name'] = student.first_name
+        course_student_resp['student_last_name'] = student.last_name
+        course_student_resp['student_matric_no'] = student.matric_no
 
-
-@course_namespace.route('/<int:course_id>/students/<int:student_id>')
-class StudentCourseRemoval(Resource):
+        return course_student_resp, HTTPStatus.CREATED
 
     @course_namespace.doc(
-        description='Remove a student from a course',
+        description='Remove a Student from a Course',
         params = {
             'course_id': "The Course's ID",
             'student_id': "The Student's ID"
@@ -181,13 +217,23 @@ class StudentCourseRemoval(Resource):
         """
             Remove a Student from a Course - Admins Only
         """
-        course = Course.get_by_id(course_id)
-        student = Student.get_by_id(student_id)
 
+        # Confirm existence of student and course
+        course = Course.query.filter_by(id=course_id).first()
+        student = Student.query.filter_by(id=student_id).first()
+        if not student or not course:
+            return {"message": "Student or Course Not Found"}, HTTPStatus.NOT_FOUND
+        
+        # Check if student is not registered for the course
         student_in_course = StudentCourse.query.filter_by(
                 student_id=student.id, course_id=course.id
             ).first()
+        if not student_in_course:
+            return {
+                "message": f"{student.first_name} {student.last_name} is not registered for {course.name}"
+            }, HTTPStatus.NOT_FOUND
 
+        # Remove the student from the course
         student_in_course.delete()
 
-        return {"message": "Course Successfully Deleted"}, HTTPStatus.OK
+        return {"message": f"{student.first_name} {student.last_name} has been successfully removed from {course.name}"}, HTTPStatus.OK

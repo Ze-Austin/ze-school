@@ -44,7 +44,7 @@ def create_app(config=config_dict['dev']):
         }, HTTPStatus.UNAUTHORIZED
     
     @jwt.expired_token_loader
-    def expired_token_callback():
+    def expired_token_callback(jwt_header, jwt_payload):
         return {
             "message": "The token has expired",
             "error": "token_expired"

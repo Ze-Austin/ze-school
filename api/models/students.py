@@ -5,7 +5,7 @@ class Student(User):
     __tablename__ = 'students'
     id = db.Column(db.Integer(), db.ForeignKey('users.id'), primary_key=True)
     matric_no = db.Column(db.String(30), unique=True)
-    course = db.relationship('Course', secondary='student_course')
+    course = db.relationship('Course', secondary='student_course', lazy=True)
     grade = db.relationship('Grade', backref='student_grade', lazy=True)
 
     __mapper_args__ = {

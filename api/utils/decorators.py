@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt, verify_jwt_in_request
 from functools import wraps
 from http import HTTPStatus
 
-# Get the user type for use in the @admin_required() decorator
+# Get the authorized user type
 def get_user_type(id:int):
     user = User.query.filter_by(id=id).first()
     if user:
