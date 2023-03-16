@@ -120,7 +120,7 @@ To use this API, follow these steps:
 
 7. When you're done, click 'Authorize' at top right again to then 'Logout'
 
-**Note:** When using this API in production, please [clone this repo](https://github.com/Ze-Austin/ze-school) and uncomment the `@admin_required()` decorator in line 51 of [the admin views file](https://github.com/Ze-Austin/ze-school/blob/main/api/admin/views.py). This will ensure that students and other users will not be authorized to access the admin creation route after the first admin is registered.
+**Note:** When using this API in production, please [fork this repo](https://github.com/Ze-Austin/ze-school) and uncomment the `@admin_required()` decorator in line 51 of [the admin views file](https://github.com/Ze-Austin/ze-school/blob/main/api/admin/views.py). This will ensure that students and other users will not be authorized to access the admin creation route after the first admin is registered.
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
