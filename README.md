@@ -13,8 +13,6 @@
 </div>
 
 <!-- Project Name -->
-<br />
-
 <div align="center">
   <h1>Ze School</h1>
 </div>
