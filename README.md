@@ -97,7 +97,7 @@ Creating this API helped me learn and practice:
 
 To use this API, follow these steps:
 
-1. Open the PythonAnywhere web app on your browser: https://zeaustin.pythonanywhere.com/
+1. Open the PythonAnywhere web app on your browser: https://zeaustin.pythonanywhere.com
 
 2. Create an admin or student account:
     - Click 'admin' to reveal a dropdown menu of administration routes, then register an admin account via the '/admin/register' route
