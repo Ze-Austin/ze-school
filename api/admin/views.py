@@ -36,7 +36,7 @@ class GetAllAdmins(Resource):
     @admin_required()
     def get(self):
         """
-            Retrieve All Admins - Admins Only`
+            Retrieve All Admins - Admins Only
         """
         admins = Admin.query.all()
 
