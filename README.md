@@ -105,7 +105,7 @@ To use this API, follow these steps:
 
 3. Sign in via the '/auth/login' route to generate a JWT token. Copy this access token without the quotation marks
 
-4. Scroll up to click "Authorize" at top right. Enter the JWT token in the given format, for example:
+4. Scroll up to click 'Authorize' at top right. Enter the JWT token in the given format, for example:
    ```
    Bearer this1is2a3rather4long5hex6string
    ```
