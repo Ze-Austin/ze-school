@@ -1,4 +1,3 @@
-from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.users import User
 from ..utils.blacklist import BLACKLIST
@@ -31,12 +30,12 @@ login_model = auth_namespace.model(
 class GetAllUsers(Resource):
     @auth_namespace.marshal_with(user_model)
     @auth_namespace.doc(
-        description="Retrieve all users"
+        description = "Retrieve All Users - Admins Only"
     )
     @admin_required()
     def get(self):
         """
-            Retrieve all Users - Admins Only
+            Retrieve All Users - Admins Only
         """
         users = User.query.all()
 
@@ -45,9 +44,12 @@ class GetAllUsers(Resource):
 @auth_namespace.route('/login')
 class Login(Resource):
     @auth_namespace.expect(login_model)
+    @auth_namespace.doc(
+        description = "Generate Access and Refresh JWT Tokens"
+    )
     def post(self):
         """
-            Generate JWT Token
+            Generate Access and Refresh JWT Tokens
         """
         data = auth_namespace.payload
 
@@ -70,6 +72,9 @@ class Login(Resource):
 
 @auth_namespace.route('/refresh')
 class Refresh(Resource):
+    @auth_namespace.doc(
+        description = "Refresh Access Token"
+    )
     @jwt_required(refresh=True)
     def post(self):
         """
@@ -84,6 +89,9 @@ class Refresh(Resource):
 
 @auth_namespace.route('/logout')
 class Logout(Resource):
+    @auth_namespace.doc(
+        description = "Revoke Access/Refresh Token"
+    )
     @jwt_required(verify_type=False)
     def post(self):
         """

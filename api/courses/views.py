@@ -137,7 +137,7 @@ class GetUpdateDeleteCourse(Resource):
 class GetAllCourseStudents(Resource):
 
     @course_namespace.doc(
-        description = "Get all Students Enrolled for a Course - Admins Only",
+        description = "Get All Students Enrolled for a Course - Admins Only",
         params = {
             'course_id': "The Course's ID"
         }
@@ -145,7 +145,7 @@ class GetAllCourseStudents(Resource):
     @admin_required()
     def get(self, course_id):
         """
-            Get all Students Enrolled for a Course - Admins Only
+            Get All Students Enrolled for a Course - Admins Only
         """
         students = StudentCourse.get_students_in_course(course_id)
         resp = []
@@ -206,7 +206,7 @@ class AddDropCourseStudent(Resource):
         return course_student_resp, HTTPStatus.CREATED
 
     @course_namespace.doc(
-        description='Remove a Student from a Course',
+        description = 'Remove a Student from a Course - Admins Only',
         params = {
             'course_id': "The Course's ID",
             'student_id': "The Student's ID"

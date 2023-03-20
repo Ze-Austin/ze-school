@@ -104,7 +104,7 @@ class GetUpdateDeleteAdmins(Resource):
     
     @admin_namespace.expect(admin_signup_model)
     @admin_namespace.doc(
-        description = "Update an Admin's Details by ID - Admins Only",
+        description = "Update an Admin's Details by ID - Specific Admin Only",
         params = {
             'admin_id': "The Admin's ID"
         }
@@ -112,7 +112,7 @@ class GetUpdateDeleteAdmins(Resource):
     @admin_required()
     def put(self, admin_id):
         """
-            Update an Admin's Details by ID - Admins Only
+            Update an Admin's Details by ID - Specific Admin Only
         """
         admin = Admin.get_by_id(admin_id)
         active_admin = get_jwt_identity()
