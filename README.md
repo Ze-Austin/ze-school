@@ -60,7 +60,7 @@ Ze School is a REST API which enables school staff to register accounts and mana
 
 Students have limited access to the app, as a student can only change their profile details and view their profile, courses, grades and CGPA.
 
-This student management API was built with Python's Flask-RESTX by <a href="https://www.github.com/Ze-Austin">Ze Austin</a> during Backend Engineering live classes at <a href="https://altschoolafrica.com/schools/engineering">AltSchool Africa</a>.
+This student management API was built with Python's Flask-RESTX by <a href="https://www.github.com/Ze-Austin">Ze Austin</a> as the third semester exam project for a Diploma in Backend Engineering from <a href="https://altschoolafrica.com/schools/engineering">AltSchool Africa</a>.
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
